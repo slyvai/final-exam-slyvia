@@ -36,10 +36,10 @@ export async function getStaticProps({ params }) {
 
 export async function getStaticPaths() {
   try {
-    const res = await fetch("https://course.summitglobal.id/products");
-    const data = await res.json();
+    const res = await fetch("/api/products");
+    const json = await res.json();
 
-    const productsArray = data.body?.data || [];
+    const productsArray = json?.body?.data || [];
     const paths = productsArray.map(p => ({ params: { id: p.id.toString() } }));
 
     return { paths, fallback: true };

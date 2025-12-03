@@ -1,52 +1,63 @@
 import { useState, useEffect } from "react";
-import { Card, Row, Col, List, Skeleton } from "antd";
+import { Card, Row, Col, List, Skeleton, Typography } from "antd";
+
+const { Title, Text } = Typography;
 
 export default function Dashboard({ products }) {
   const [randomProduct, setRandomProduct] = useState(null);
 
-
-  const safeProducts = Array.isArray(products)
-    ? products.filter((p) => p && typeof p === "object")
-    : [];
+  const safeProducts = Array.isArray(products) ? products.filter(Boolean) : [];
 
   useEffect(() => {
     if (safeProducts.length > 0) {
-      const random = safeProducts[Math.floor(Math.random() * safeProducts.length)];
+      const random =
+        safeProducts[Math.floor(Math.random() * safeProducts.length)];
       setRandomProduct(random);
     }
   }, [safeProducts]);
 
   const categories = [
-    ...new Set(
-      safeProducts
-        .map((p) => p.category)
-        .filter((c) => c != null && c !== "")
-    ),
+    ...new Set(safeProducts.map((p) => p.category).filter(Boolean)),
   ];
+
+  const cardStyle = {
+    borderRadius: 12,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+  };
 
   return (
     <div style={{ padding: 20 }}>
-      <Row gutter={16}>
-        {/* Total Products */}
+      <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card title="Total Products">{safeProducts.length}</Card>
+          <Card title="Total Products" style={cardStyle}>
+            <Title level={2} style={{ margin: 0 }}>
+              {safeProducts.length}
+            </Title>
+          </Card>
         </Col>
 
-        {/* Recommended Product */}
+  
         <Col span={8}>
-          <Card title="Recommended Product">
+          <Card title="Recommended Product" style={cardStyle}>
             {randomProduct ? (
               <div
                 style={{
                   textAlign: "center",
+                  padding: "10px 0",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: "10px",
+                  gap: "8px",
                 }}
               >
-                <h3>{randomProduct.name || "-"}</h3>
-                {randomProduct?.price != null && `Rp ${randomProduct.price.toLocaleString()}`}
+                <Title level={4} style={{ margin: 0 }}>
+                  {randomProduct.name || "-"}
+                </Title>
+
+                <Text strong style={{ fontSize: 18 }}>
+                  {randomProduct.price != null &&
+                    `Rp ${randomProduct.price.toLocaleString()}`}
+                </Text>
               </div>
             ) : (
               <Skeleton active />
@@ -54,12 +65,18 @@ export default function Dashboard({ products }) {
           </Card>
         </Col>
 
-        {/* Categories List */}
         <Col span={8}>
-          <Card title="Categories List">
+          <Card title="Categories" style={cardStyle}>
             <List
               dataSource={categories}
-              renderItem={(item) => <List.Item>{item}</List.Item>}
+              size="small"
+              pagination={{
+                pageSize: 5,
+                size: "small",
+              }}
+              renderItem={(item) => (
+                <List.Item style={{ paddingLeft: 8 }}>{item}</List.Item>
+              )}
             />
           </Card>
         </Col>
@@ -70,16 +87,14 @@ export default function Dashboard({ products }) {
 
 export async function getServerSideProps() {
   try {
-    const res = await fetch("https://course.summitglobal.id/products");
-    const json = await res.json();
-    const data = json?.body?.data || json || [];
+    const res = await fetch(
+      `${process.env.BASE_URL || "http://localhost:3000"}/api/products`
+    );
+    const data = await res.json();
 
-    // Filter out invalid entries
-    const products = Array.isArray(data)
-      ? data.filter((p) => p && typeof p === "object")
-      : [];
-
-    return { props: { products } };
+    return {
+      props: { products: Array.isArray(data) ? data : data?.products || [] },
+    };
   } catch (error) {
     console.error("Failed to fetch products:", error);
     return { props: { products: [] } };

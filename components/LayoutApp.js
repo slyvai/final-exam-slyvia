@@ -1,7 +1,7 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { Layout, Menu, Switch, Typography, Skeleton, Button} from 'antd';
-import Link from 'next/link';
-import { AppContext } from '../context/AppContext';
+import React, { useContext, useState, useEffect } from "react";
+import { Layout, Menu, Switch, Typography, Skeleton } from "antd";
+import Link from "next/link";
+import { AppContext } from "../context/AppContext";
 import { useRouter } from "next/router";
 
 const { Header, Sider, Content } = Layout;
@@ -14,7 +14,17 @@ export default function AppLayout({ children }) {
 
   const isDark = theme === "dark";
 
-  const toggleTheme = (checked) => setTheme(checked ? 'dark' : 'light');
+  const toggleTheme = (checked) => {
+    setTheme(checked ? "dark" : "light");
+  };
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
 
 
   useEffect(() => {
@@ -57,50 +67,42 @@ export default function AppLayout({ children }) {
   };
 
   return (
-    <div className={theme === "dark" ? "dark" : ""}>
-      <Layout style={layoutStyle}>
-        <Sider theme={theme} width={220}>
-          <div
-            style={{
-              padding: "16px",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Title level={4} style={{ color: isDark ? "#fff" : "#000", margin: 0 }}>
-              Products List
-            </Title>
+    <Layout style={layoutStyle}>
+      <Sider theme={theme} width={220}>
+        <div
+          style={{
+            padding: "16px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Title level={4} style={{ color: isDark ? "#fff" : "#000", margin: 0 }}>
+            Products List
+          </Title>
+        </div>
+
+        <Menu theme={theme} mode="inline" defaultSelectedKeys={["dashboard"]}>
+          <Menu.Item key="dashboard">
+            <Link href="/dashboard">Dashboard</Link>
+          </Menu.Item>
+          <Menu.Item key="products">
+            <Link href="/products">Products</Link>
+          </Menu.Item>
+        </Menu>
+      </Sider>
+
+      <Layout>
+        <Header style={headerStyle}>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <span style={{ color: isDark ? "#fff" : "#000" }}>Theme</span>
+            <Switch checked={isDark} onChange={toggleTheme} />
           </div>
+        </Header>
 
-          <Menu theme={theme} mode="inline" defaultSelectedKeys={["dashboard"]}>
-            <Menu.Item key="dashboard">
-              <Link href="/dashboard">Dashboard</Link>
-            </Menu.Item>
-            <Menu.Item key="products">
-              <Link href="/products">Products</Link>
-            </Menu.Item>
-          </Menu>
-        </Sider>
-
-        <Layout>
-          <Header style={headerStyle}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                <div style={{ color: isDark ? "#fff" : "#000", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>Theme</span>
-                  <Switch checked={isDark} onChange={toggleTheme} />
-                </div>
-
-              </div>
-            </div>
-          </Header>
-
-          <Content style={contentStyle}>
-            {loading ? <Skeleton active paragraph={{ rows: 8 }} /> : children}
-          </Content>
-        </Layout>
+        <Content style={contentStyle}>
+          {loading ? <Skeleton active paragraph={{ rows: 8 }} /> : children}
+        </Content>
       </Layout>
-
-    </div>
+    </Layout>
   );
 }

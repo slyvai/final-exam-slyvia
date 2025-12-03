@@ -1,25 +1,103 @@
-import ProductsList from "@/components/ProductsList";
+import { useEffect, useState } from "react";
+import ProductTable from "@/components/ProductsList"; 
+import { message } from "antd";
 
-export async function getServerSideProps() {
-  try {
-    const res = await fetch("https://course.summitglobal.id/products");
+export default function ProductsPage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-    if (!res.ok) {
-      console.log("API ERROR:", res.status);
-      return { props: { initialProducts: [] } };
+const [messageApi, contextHolder] = message.useMessage();
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/products");
+      const json = await res.json();
+      const list = Array.isArray(json)
+        ? json
+        : json.products || json.data || [];
+
+      setProducts(list);
+    } catch (e) {
+      console.error(e);
+      messageApi.error("Failed loading products");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    try {
+      loadProducts();
+      messageApi.success("Products loaded!");
+    } catch (e) {
+      console.error(e);
+      messageApi.error("Failed loading products");
     }
 
-    const json = await res.json();
-    const data = json?.body?.data || [];
+  }, []);
 
-    return { props: { initialProducts: data } };
+  const handleAdd = async (values) => {
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
 
-  } catch (err) {
-    console.log("SSR fetch error:", err);
-    return { props: { initialProducts: [] } };
-  }
-}
+      if (!res.ok) throw new Error();
 
-export default function ProductsPage({ initialProducts }) {
-  return <ProductsList initialProducts={initialProducts} />;
+      messageApi.success("Product added!");
+      loadProducts();
+    } catch (err) {
+      messageApi.error("Failed adding product");
+    }
+  };
+
+
+  const handleEdit = async (values) => {
+    try {
+      const res = await fetch(`/api/products?id=${values.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) throw new Error();
+
+      messageApi.success("Product updated!");
+      loadProducts();
+    } catch (err) {
+      messageApi.error("Failed updating product");
+    }
+  };
+
+
+  const handleDelete = async (product) => {
+    try {
+      const res = await fetch(`/api/products?id=${product.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error();
+
+      messageApi.success("Product deleted!");
+      loadProducts();
+    } catch (err) {
+      messageApi.error("Failed deleting product");
+    }
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      {contextHolder}
+      <ProductTable
+        data={products}
+        loading={loading}
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onRefresh={loadProducts}
+      />
+    </div>
+  );
 }
