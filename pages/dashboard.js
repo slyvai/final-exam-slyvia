@@ -85,18 +85,23 @@ export default function Dashboard({ products }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ req }) {
   try {
-    const res = await fetch(
-      `${process.env.BASE_URL || "http://localhost:3000"}/api/products`
-    );
+    const baseUrl = process.env.NODE_ENV === "production"
+      ? `https://${req.headers.host}`
+      : "http://localhost:3000";
+
+    const res = await fetch(`${baseUrl}/api/products`);
     const data = await res.json();
 
     return {
-      props: { products: Array.isArray(data) ? data : data?.products || [] },
+      props: {
+        products: Array.isArray(data) ? data : data.products || []
+      },
     };
   } catch (error) {
     console.error("Failed to fetch products:", error);
     return { props: { products: [] } };
   }
 }
+
