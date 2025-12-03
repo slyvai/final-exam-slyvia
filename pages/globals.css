@@ -185,4 +185,17 @@
   border-color: #333 !important;
 }
 
+.dark .ant-select-item-option-content {
+  color: #fff !important;
+  background-color: #1a1a1a !important;
+}
+
+.dark .ant-modal-container {
+  background-color: #383838 !important;
+} 
+
+.dark .ant-modal-confirm-title {
+  color: #fff !important;
+}
+
  

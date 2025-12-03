@@ -72,21 +72,16 @@ const [messageApi, contextHolder] = message.useMessage();
   };
 
 
-  const handleDelete = async (product) => {
-    try {
-      const res = await fetch(`/api/products?id=${product.id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) throw new Error();
-
-      messageApi.success("Product deleted!");
-      loadProducts();
-    } catch (err) {
-      messageApi.error("Failed deleting product");
-    }
+  const handleSoftDelete = (product) => {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id ? { ...p, deleted: true } : p
+      )
+    );
+    messageApi.success(
+      `Product ${product.name} has been deleted!`
+    );
   };
-
   return (
     <div style={{ padding: 20 }}>
       {contextHolder}
@@ -95,7 +90,7 @@ const [messageApi, contextHolder] = message.useMessage();
         loading={loading}
         onAdd={handleAdd}
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onDelete={handleSoftDelete}
         onRefresh={loadProducts}
       />
     </div>
