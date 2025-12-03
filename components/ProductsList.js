@@ -118,6 +118,8 @@ export default function ProductsList({ initialProducts }) {
         />
 
         <Button onClick={refresh}>Refresh</Button>
+
+        <Button>Add Products</Button>
       </Space>
 
       {loading ? (
