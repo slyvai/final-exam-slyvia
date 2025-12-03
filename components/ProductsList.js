@@ -105,6 +105,7 @@ export default function ProductTable({ data, onEdit, onDelete, onAdd, onRefresh,
 
           <Button
             type="danger"
+            style={{ marginLeft: 8, backgroundColor: "#ffffff", color: "red", border: "none"}}
             onClick={() => {
               Modal.confirm({
                 title: "Delete product?",

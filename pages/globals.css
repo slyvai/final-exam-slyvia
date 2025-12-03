@@ -174,3 +174,15 @@
   color: #fff !important;
   border-color: #333 !important;
 }
+
+.dark .ant-select-selection::placeholder {
+  color: #ffffff !important;
+}
+
+.dark .ant-select-selector {
+  background: #111 !important;
+  color: #fff !important;
+  border-color: #333 !important;
+}
+
+ 
