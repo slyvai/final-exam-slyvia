@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+
+.dark {
+  background: #0d0d0d !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-layout,
+.dark .ant-layout-content,
+.dark .ant-layout-header,
+.dark .ant-layout-sider {
+  background: #000000 !important;
+  color: #fff !important;
+}
+
+.dark .ant-table,
+.dark .ant-table-thead > tr > th,
+.dark .ant-table-tbody > tr > td {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-input,
+.dark .ant-select-selector,
+.dark .ant-btn {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+  border-color: #555555 !important;
+}
+
+.dark .ant-btn-primary {
+  background-color: #3547e7 !important;
+  border-color: #777777 !important;
+}
+
+.dark .ant-skeleton {
+  background-color: #2a2a2a !important;
+}
+
+.dark .ant-btn-danger {
+  color: #e73535 !important;
+}
+
+.dark .ant-skeleton-element,
+.dark .ant-skeleton-title,
+.dark .ant-skeleton-paragraph > li {
+  background-color: #8b8b8b !important;
+}
+
+.dark .ant-input::placeholder, 
+.dark .ant-select-selection-placeholder {
+  color: #808080 !important;
+}
+
+.dark .ant-select {
+  background-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-card,
+.dark .ant-card-body,
+.dark .ant-card-head,
+.dark .ant-card-head-title,
+.dark .ant-card-actions,
+.dark .ant-card-actions > li {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-list-item{
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-pagination-item {
+  background-color: #3a3a3a !important;
+}
+
+.dark .ant-pagination-item a {
+  color: #ffffff !important;
+}
+
+.dark .ant-pagination-item-link {
+  color: #ffffff !important;
+}
+
+.dark .ant-empty-description {
+  color: #ffffff !important;
+}
+
+.dark .ant-descriptions .ant-descriptions-item-label {
+  color: #ffffff !important;
+}
+
+.dark .ant-descriptions th {
+ background-color: #383838 !important;
+}
+
+.dark .ant-descriptions .ant-descriptions-item-content {
+  color: #ffffff !important;
+}
+
+
+
+
