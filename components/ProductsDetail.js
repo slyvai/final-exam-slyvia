@@ -8,13 +8,6 @@ export default function ProductsDetail({ products }) {
 
   return (
     <Card>
-      <Image
-        src={products.image}
-        alt={products.name}
-        width={300}
-        height={300}
-        style={{ objectFit: "contain" }}
-      />
       <Descriptions bordered column={1} style={{ marginTop: 16 }}>
         <Descriptions.Item label="Name">{products.name}</Descriptions.Item>
         <Descriptions.Item label="Description">{products.description}</Descriptions.Item>

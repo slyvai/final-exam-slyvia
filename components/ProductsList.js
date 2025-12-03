@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { Table, Input, Select, Button, Space, Skeleton, Popconfirm, message } from "antd";
+import {
+  Table,
+  Input,
+  Select,
+  Button,
+  Space,
+  Skeleton,
+  Popconfirm,
+  message,
+  Modal,
+  Form,
+  InputNumber,
+} from "antd";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function ProductsList({ initialProducts }) {
   const list = Array.isArray(initialProducts)
-  ? initialProducts
-  : initialProducts?.products || 
-  initialProducts?.data || [];
+    ? initialProducts
+    : initialProducts?.products || initialProducts?.data || [];
 
   const categories = [...new Set(list.map((p) => p.category))];
   const [products, setProducts] = useState(list);
@@ -15,8 +26,12 @@ export default function ProductsList({ initialProducts }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
 
+  // Modal state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [form] = Form.useForm();
 
-
+  // Refresh products from API
   const refresh = async () => {
     try {
       setLoading(true);
@@ -31,66 +46,117 @@ export default function ProductsList({ initialProducts }) {
     }
   };
 
+  const openAddModal = () => {
+    setEditingProduct(null);
+    form.resetFields();
+    setModalVisible(true);
+  };
 
+  const openEditModal = (product) => {
+    setEditingProduct(product);
+    form.setFieldsValue(product);
+    setModalVisible(true);
+  };
+
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+
+      if (editingProduct) {
+        // PUT request to update
+        const res = await fetch(
+          `https://course.summitglobal.id/products?id=${editingProduct.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(values),
+          }
+        );
+        if (!res.ok) throw new Error("Failed to update product");
+        message.success("Product updated successfully");
+      } else {
+        // POST request to create
+        const res = await fetch("https://course.summitglobal.id/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+        if (!res.ok) throw new Error("Failed to add product");
+        message.success("Product added successfully");
+      }
+
+      setModalVisible(false);
+      form.resetFields();
+      refresh();
+    } catch (err) {
+      message.error(err.message || "Operation failed");
+    }
+  };
+
+ 
   const filtered = products.filter((item) => {
-    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
+    const name = item.name || "";
+    const matchSearch = name.toLowerCase().includes(search.toLowerCase());
     const matchCategory = category ? item.category === category : true;
     return matchSearch && matchCategory;
   });
 
   const columns = [
     {
-  title: "Image",
-  dataIndex: "image",
-  key: "image",
-  render: (src) => (
-    <Image
-      width={100}
-      height={100}
-      src={src}
-      alt="product"
-      style={{ objectFit: "cover", borderRadius: 8 }}
-      fallback="https://via.placeholder.com/60"
-    />
-  ),
-},
-    {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      render: (n) => n || "-",
     },
     {
       title: "Category",
       dataIndex: "category",
       key: "category",
+      render: (c) => c || "-",
     },
     {
       title: "Price",
       dataIndex: "price",
       key: "price",
-      render: (p) => `Rp ${p.toLocaleString()}`,
+      render: (p) => (p != null ? `Rp ${p.toLocaleString()}` : "-"),
     },
     {
       title: "Stock",
       dataIndex: "stock",
       key: "stock",
+      render: (s) => (s != null ? s : "-"),
     },
     {
       title: "Action",
       key: "action",
       render: (_, record) => (
         <Space>
-          <Button type="primary">Edit</Button>
+          <Button type="primary" onClick={() => openEditModal(record)}>
+            Edit
+          </Button>
           <Popconfirm
             title="Delete product?"
             okText="Yes"
             cancelText="No"
-            onConfirm={() => message.info(`Deleted: ${record.name}`)}
+            onConfirm={async () => {
+              try {
+                const res = await fetch(
+                  `https://course.summitglobal.id/products?id=${record.id}`,
+                  { method: "DELETE" }
+                );
+                if (!res.ok) throw new Error("Delete failed");
+                message.success("Product deleted");
+                refresh();
+              } catch (err) {
+                message.error(err.message || "Failed to delete");
+              }
+            }}
           >
-            <Button type="danger" style={{color : 'red'}}>Delete</Button>
+            <Button type="danger">Delete</Button>
           </Popconfirm>
-
-          <Button type="dash"><Link href={`/products/${record.id}`}>Detail</Link></Button>
+          <Button>
+            <Link href={`/products/${record.id}`}>Detail</Link>
+          </Button>
         </Space>
       ),
     },
@@ -107,7 +173,6 @@ export default function ProductsList({ initialProducts }) {
           onChange={(e) => setSearch(e.target.value)}
           style={{ width: 200 }}
         />
-
         <Select
           allowClear
           placeholder="Filter Category"
@@ -116,10 +181,10 @@ export default function ProductsList({ initialProducts }) {
           style={{ width: 200 }}
           options={categories.map((c) => ({ label: c, value: c }))}
         />
-
         <Button onClick={refresh}>Refresh</Button>
-
-        <Button>Add Products</Button>
+        <Button type="primary" onClick={openAddModal}>
+          Add Product
+        </Button>
       </Space>
 
       {loading ? (
@@ -127,6 +192,69 @@ export default function ProductsList({ initialProducts }) {
       ) : (
         <Table columns={columns} dataSource={filtered} rowKey="id" />
       )}
+
+      <Modal
+        title={editingProduct ? "Edit Product" : "Add Product"}
+        visible={modalVisible}
+        onOk={handleModalOk}
+        onCancel={() => setModalVisible(false)}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ price: 0, stock: 0 }}
+        >
+          <Form.Item
+            label="Name"
+            name="name"
+            rules={[{ required: true, message: "Please input product name" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Description"
+            name="description"
+            rules={[
+              { required: true, message: "Please input product description" },
+            ]}
+          >
+            <Input.TextArea />
+          </Form.Item>
+
+          <Form.Item
+            label="Price"
+            name="price"
+            rules={[{ required: true, message: "Please input price" }]}
+          >
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+
+          <Form.Item
+            label="Stock"
+            name="stock"
+            rules={[{ required: true, message: "Please input stock" }]}
+          >
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+
+          <Form.Item
+            label="Category"
+            name="category"
+            rules={[{ required: true, message: "Please input category" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Image URL"
+            name="image"
+            rules={[{ required: true, message: "Please input image URL" }]}
+          >
+            <Input placeholder="https://example.com/image.jpg" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
